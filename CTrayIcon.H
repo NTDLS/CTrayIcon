@@ -25,7 +25,7 @@ class CTrayIcon{
 
 		LPVOID UserData;
 
-		NOTIFYICONDATA OriginalTrayNotifiy;
+		NOTIFYICONDATA OriginalTrayNotify;
 
 		unsigned int WM_TASKBARCREATED;
 

@@ -59,7 +59,7 @@ void TrayIconProc(CTrayIcon *lpTI, HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     else if(uMsg == lpTI->WM_TASKBARCREATED)
     {
 		//Windows explorer just started up.
-		//The original iocn and tip will be re-added, do what you need to do here to update it.
+		//The original icon and tip will be re-added, do what you need to do here to update it.
     }
 }
 */
@@ -95,7 +95,7 @@ LRESULT CALLBACK CTrayIconProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 	{
 		if(uMsg == lpTI->WM_TASKBARCREATED)
 		{
-			Shell_NotifyIcon(NIM_ADD, &lpTI->OriginalTrayNotifiy);
+			Shell_NotifyIcon(NIM_ADD, &lpTI->OriginalTrayNotify);
 		}
 
 		lpTI->pUserCallback(lpTI, hWnd, uMsg, wParam, lParam); 
@@ -155,21 +155,21 @@ bool CTrayIcon::Create(int iIcon, const char *sTitle, HMENU hInPopupMenu, UserCa
 
 	SetProp(hTrayHandle, "ClassProperties", this);
 
-	memset(&this->OriginalTrayNotifiy, 0, sizeof(this->OriginalTrayNotifiy));
-	this->OriginalTrayNotifiy.cbSize			= sizeof(NOTIFYICONDATA);
-    this->OriginalTrayNotifiy.hWnd				= hTrayHandle;
-	this->OriginalTrayNotifiy.uID				= 0;
-    this->OriginalTrayNotifiy.hIcon				= LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon) );
-    this->OriginalTrayNotifiy.uFlags			= NIF_ICON | NIF_TIP | NIF_MESSAGE;
-    this->OriginalTrayNotifiy.uCallbackMessage	= WM_SHELLNOTIFY;
+	memset(&this->OriginalTrayNotify, 0, sizeof(this->OriginalTrayNotify));
+	this->OriginalTrayNotify.cbSize			= sizeof(NOTIFYICONDATA);
+    this->OriginalTrayNotify.hWnd				= hTrayHandle;
+	this->OriginalTrayNotify.uID				= 0;
+    this->OriginalTrayNotify.hIcon				= LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon) );
+    this->OriginalTrayNotify.uFlags			= NIF_ICON | NIF_TIP | NIF_MESSAGE;
+    this->OriginalTrayNotify.uCallbackMessage	= WM_SHELLNOTIFY;
 
 	#ifdef UNICODE
-	wcscpy_s(this->OriginalTrayNotifiy.szTip, sizeof(this->OriginalTrayNotifiy.szTip), sTitle);
+	wcscpy_s(this->OriginalTrayNotify.szTip, sizeof(this->OriginalTrayNotify.szTip), sTitle);
 	#else
-	strcpy_s(this->OriginalTrayNotifiy.szTip, sizeof(this->OriginalTrayNotifiy.szTip), sTitle);
+	strcpy_s(this->OriginalTrayNotify.szTip, sizeof(this->OriginalTrayNotify.szTip), sTitle);
 	#endif
 
-    Shell_NotifyIcon(NIM_ADD, &this->OriginalTrayNotifiy);
+    Shell_NotifyIcon(NIM_ADD, &this->OriginalTrayNotify);
 
 	HMENU hMainMenu = CreateMenu();
 	hPopupMenu = hInPopupMenu;
@@ -192,7 +192,7 @@ bool CTrayIcon::Create(int iIcon, const char *sTitle, HMENU hInPopupMenu, UserCa
     }
 
 	UnregisterClass(sClass, hAppInstance);
-	Shell_NotifyIcon(NIM_DELETE, &this->OriginalTrayNotifiy);
+	Shell_NotifyIcon(NIM_DELETE, &this->OriginalTrayNotify);
 
 	return true;
 }
@@ -201,15 +201,15 @@ bool CTrayIcon::Create(int iIcon, const char *sTitle, HMENU hInPopupMenu, UserCa
 
 bool CTrayIcon::Update(int iIcon)
 {
-	NOTIFYICONDATA TrayNotifiy;
-	memset(&TrayNotifiy, 0, sizeof(TrayNotifiy));
+	NOTIFYICONDATA TrayNotify;
+	memset(&TrayNotify, 0, sizeof(TrayNotify));
 
-	TrayNotifiy.cbSize= sizeof(NOTIFYICONDATA);
-    TrayNotifiy.hWnd = hTrayHandle;
-    TrayNotifiy.uFlags = NIF_ICON;
-	TrayNotifiy.hIcon = LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon));
+	TrayNotify.cbSize= sizeof(NOTIFYICONDATA);
+    TrayNotify.hWnd = hTrayHandle;
+    TrayNotify.uFlags = NIF_ICON;
+	TrayNotify.hIcon = LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon));
 
-    return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotifiy) != 0);
+    return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotify) != 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -220,20 +220,20 @@ bool CTrayIcon::Update(const WCHAR *sTitle)
 bool CTrayIcon::Update(const char *sTitle)
 #endif
 {
-	NOTIFYICONDATA TrayNotifiy;
-	memset(&TrayNotifiy, 0, sizeof(TrayNotifiy));
+	NOTIFYICONDATA TrayNotify;
+	memset(&TrayNotify, 0, sizeof(TrayNotify));
 
-	TrayNotifiy.cbSize= sizeof(NOTIFYICONDATA);
-    TrayNotifiy.hWnd = hTrayHandle;
-    TrayNotifiy.uFlags = NIF_TIP;
+	TrayNotify.cbSize= sizeof(NOTIFYICONDATA);
+    TrayNotify.hWnd = hTrayHandle;
+    TrayNotify.uFlags = NIF_TIP;
 
 	#ifdef UNICODE
-	wcscpy_s(TrayNotifiy.szTip, sizeof(TrayNotifiy.szTip), sTitle);
+	wcscpy_s(TrayNotify.szTip, sizeof(TrayNotify.szTip), sTitle);
 	#else
-	strcpy_s(TrayNotifiy.szTip, sizeof(TrayNotifiy.szTip), sTitle);
+	strcpy_s(TrayNotify.szTip, sizeof(TrayNotify.szTip), sTitle);
 	#endif
 
-    return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotifiy) != 0);
+    return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotify) != 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -244,39 +244,39 @@ bool CTrayIcon::Update(int iIcon, const WCHAR *sTitle)
 bool CTrayIcon::Update(int iIcon, const char *sTitle)
 #endif
 {
-	NOTIFYICONDATA TrayNotifiy;
-	memset(&TrayNotifiy, 0, sizeof(TrayNotifiy));
+	NOTIFYICONDATA TrayNotify;
+	memset(&TrayNotify, 0, sizeof(TrayNotify));
 
-	TrayNotifiy.cbSize= sizeof(NOTIFYICONDATA);
-    TrayNotifiy.hWnd = hTrayHandle;
-    TrayNotifiy.uFlags = NIF_ICON | NIF_TIP;
-	TrayNotifiy.hIcon = LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon));
+	TrayNotify.cbSize= sizeof(NOTIFYICONDATA);
+    TrayNotify.hWnd = hTrayHandle;
+    TrayNotify.uFlags = NIF_ICON | NIF_TIP;
+	TrayNotify.hIcon = LoadIcon(hAppInstance, MAKEINTRESOURCE(iIcon));
 
 	#ifdef UNICODE
-	wcsncpy_s(TrayNotifiy.szTip, sizeof(TrayNotifiy.szTip), sTitle, 63);
+	wcsncpy_s(TrayNotify.szTip, sizeof(TrayNotify.szTip), sTitle, 63);
 	#else
-	strncpy_s(TrayNotifiy.szTip, sizeof(TrayNotifiy.szTip), sTitle, 63);
+	strncpy_s(TrayNotify.szTip, sizeof(TrayNotify.szTip), sTitle, 63);
 	#endif
 
-	return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotifiy) != 0);
+	return (Shell_NotifyIcon(NIM_MODIFY, &TrayNotify) != 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 bool CTrayIcon::Destroy(void)
 {
-	NOTIFYICONDATA TrayNotifiy;
-	memset(&TrayNotifiy, 0, sizeof(TrayNotifiy));
+	NOTIFYICONDATA TrayNotify;
+	memset(&TrayNotify, 0, sizeof(TrayNotify));
 
-	TrayNotifiy.cbSize= sizeof(NOTIFYICONDATA);
-    TrayNotifiy.hWnd = hTrayHandle;
+	TrayNotify.cbSize= sizeof(NOTIFYICONDATA);
+    TrayNotify.hWnd = hTrayHandle;
 
 	SendMessage(hTrayHandle, WM_CLOSE, 0, 0);
 
 	this->hTrayHandle = NULL;
 	this->hPopupMenu = NULL;
 
-	return (Shell_NotifyIcon(NIM_DELETE, &TrayNotifiy) != 0);
+	return (Shell_NotifyIcon(NIM_DELETE, &TrayNotify) != 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
